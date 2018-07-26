@@ -1,0 +1,132 @@
+<html>
+<head>
+<style>
+input[type='text'] { 
+    font-size:   95px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+</style>
+</head>
+<body>
+
+<p>Simple Timer</p>
+
+<form name="f1">
+<input type="text" id="timer" value="00:00" readonly/>
+
+</form>
+<button onclick="enableNotifications();">Enable notifications</button>
+<p></p>
+<button onclick="toggle();">Start/Stop</button>
+<p></p>
+<button onclick="pomodoro();">Pomodoro</button>
+<p></p>
+<button onclick="longbreak();">Long Break</button>
+<p></p>
+<button onclick="shortbreak();">Short Break</button>
+
+<script type="text/javascript">
+
+var c=0;
+var timer_is_on=false;
+
+function enableNotifications() {
+    if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+    } else if (Notification.permission === "granted") {
+        // user previously granted permission or always permits notifications
+        var n = new Notification( "Access granted!" );
+        n.onclick = function(x) { window.focus(); this.cancel(); };
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission(function (permission) {
+                if(!('permission' in Notification)) {
+                    Notification.permission = permission;
+                }
+                // user was asked for permissions and granted it
+                if (permission === "granted") {
+                    var n = new Notification( "Access granted!" );
+                    n.onclick = function(x) { window.focus(); this.cancel(); };
+                }
+    });
+  }
+}
+
+function alldone(p) {
+    if( p == 0 ) {
+        var n = new Notification("Pomodoro time is up!");
+        n.onclick = function(x) { window.focus(); this.cancel(); };
+    } else if ( p == 1 ) {
+        var n = new Notification("Long break time is up!");
+        n.onclick = function(x) { window.focus(); this.cancel(); };
+    } else if ( p == 2 ) {
+        var n = new Notification("Short break time is up!");
+        n.onclick = function(x) { window.focus(); this.cancel(); };
+    }
+}
+
+
+function displayCount() {
+    var timerval = "";
+    var t = (Math.floor(c / 60));
+    if( t<10 ) {
+        timerval += "0";
+    }
+    timerval += t.toString();
+    timerval += ":"
+    t = (c - (Math.floor((c / 60))*60));
+    if( t<10 ) {
+        timerval += "0";
+    }
+    timerval += t.toString();
+    document.getElementById('timer').value=timerval;
+    document.title = timerval;
+}
+
+function count() {
+    if(timer_is_on && c > 0) {
+        c=c-1;
+        displayCount();
+        if( c == 0 ) {
+            displayCount();
+            toggle();
+            alldone(timerID);
+        }
+    }
+}
+
+var interval = setInterval(count,1000);
+
+// FIXME: This can miss time because it relies on the point at which the user stops and/or starts the timer.
+function toggle(v) {
+    if(v || !timer_is_on) {
+       timer_is_on = true;
+    } else {
+       timer_is_on = false;
+    }                   
+}
+
+function pomodoro() {
+  c = 1500;
+  timerID = 0;
+  displayCount();
+  toggle(1);
+}
+
+function longbreak() {
+  c = 600;
+  timerID = 1;
+  displayCount();
+  toggle(1);
+}
+
+function shortbreak() {
+  c = 300;
+  timerID = 2;
+  displayCount();
+  toggle(1);
+}
+</script>
+
+</body>
+</html>
